@@ -1,0 +1,54 @@
+@model BTL___QuanLySieuThiNho.Models.KhachHang
+@{ ViewData["Title"] = "Thông tin tài khoản"; }
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-circle"></i> Thông tin cá nhân</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form asp-action="CapNhatThongTin" method="post">
+                        <input type="hidden" asp-for="MaKh" />
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Mã khách hàng</label>
+                            <input class="form-control bg-light" value="@Model.MaKh" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Tên đăng nhập</label>
+                            <input class="form-control bg-light" value="@Model.TenDangNhap" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="TenKh" class="form-label fw-semibold"></label>
+                            <input asp-for="TenKh" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label fw-semibold"></label>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="SoDienThoai" class="form-label fw-semibold"></label>
+                            <input asp-for="SoDienThoai" class="form-control" />
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="DiaChi" class="form-label fw-semibold"></label>
+                            <textarea asp-for="DiaChi" class="form-control" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Điểm tích lũy</label>
+                            <input class="form-control bg-light" value="@(Model.DiemTichLuy ?? 0)" disabled />
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Lưu thay đổi</button>
+                            <a asp-controller="DonHang" asp-action="LichSuMuaHang" class="btn btn-outline-success">
+                                <i class="bi bi-clock-history"></i> Lịch sử mua hàng
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

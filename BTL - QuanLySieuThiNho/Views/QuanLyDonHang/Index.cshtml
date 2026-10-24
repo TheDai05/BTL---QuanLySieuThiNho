@@ -1,0 +1,83 @@
+@model List<BTL___QuanLySieuThiNho.Models.HoaDon>
+@{ ViewData["Title"] = "Quản lý đơn hàng"; Layout = "~/Views/Shared/_AdminLayout.cshtml"; }
+
+<!-- Filter tabs -->
+<ul class="nav nav-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link @(ViewBag.TrangThai == null ? "active" : "")" href="/Admin/QuanLyDonHang">Tất cả</a>
+    </li>
+    @foreach (var tt in new[] { (0,"Chờ xác nhận","warning"), (1,"Đã xác nhận","info"), (2,"Đang giao","primary"), (3,"Đã giao","success"), (4,"Đã hủy","secondary") })
+    {
+        <li class="nav-item">
+            <a class="nav-link @(ViewBag.TrangThai?.ToString() == tt.Item1.ToString() ? "active" : "")"
+               href="/Admin/QuanLyDonHang?trangThai=@tt.Item1">@tt.Item2</a>
+        </li>
+    }
+</ul>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr><th>Mã HĐ</th><th>Khách hàng</th><th>Ngày đặt</th><th>Giao tới</th><th>Tổng tiền</th><th>Trạng thái</th><th>Thao tác</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model)
+                    {
+                        <tr>
+                            <td><strong>#@d.MaHd</strong></td>
+                            <td>
+                                <div class="fw-semibold">@(d.TenNguoiNhan ?? d.KhachHang?.TenKh)</div>
+                                <small class="text-muted">@(d.SdtNhan ?? d.KhachHang?.SoDienThoai)</small>
+                            </td>
+                            <td>@d.NgayLap.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="small text-muted" style="max-width:150px;">@(d.DiaChiGiao ?? "Tại quầy")</td>
+                            <td class="text-success fw-bold">@d.TongTien.ToString("N0") ₫</td>
+                            <td>
+                                <select class="form-select form-select-sm sel-trang-thai" data-id="@d.MaHd" style="width:130px">
+                                    <!option value="0" @(d.TrangThai == 0 ? "selected" : "")>Chờ xác nhận</!option>
+                                    <!option value="1" @(d.TrangThai == 1 ? "selected" : "")>Đã xác nhận</!option>
+                                    <!option value="2" @(d.TrangThai == 2 ? "selected" : "")>Đang giao</!option>
+                                    <!option value="3" @(d.TrangThai == 3 ? "selected" : "")>Đã giao</!option>
+                                    <!option value="4" @(d.TrangThai == 4 ? "selected" : "")>Đã hủy</!option>
+                                </select>
+                            </td>
+                            <td>
+                                <a href="/Admin/QuanLyDonHang/ChiTiet/@d.MaHd" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if ((int)ViewBag.TongSoTrang > 1)
+{
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            @for (int i = 1; i <= (int)ViewBag.TongSoTrang; i++)
+            {
+                <li class="page-item @(i == (int)ViewBag.TrangHienTai ? "active" : "")">
+                    <a class="page-link" href="/Admin/QuanLyDonHang?trang=@i@(ViewBag.TrangThai != null ? "&trangThai=" + ViewBag.TrangThai : "")">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+@section Scripts {
+<script>
+    $(document).on('change', '.sel-trang-thai', function() {
+        var id = $(this).data('id');
+        var tt = $(this).val();
+        $.post('/Admin/QuanLyDonHang/CapNhatTrangThai', { id: id, trangThai: tt }, function(res) {
+            if (!res.success) alert('Có lỗi xảy ra!');
+        });
+    });
+</script>
+}

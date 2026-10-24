@@ -1,0 +1,83 @@
+@model List<BTL___QuanLySieuThiNho.Models.HoaDon>
+@using BTL___QuanLySieuThiNho.Models
+@{ ViewData["Title"] = "Lịch sử mua hàng"; }
+
+<div class="container py-4">
+    <h4 class="mb-4"><i class="bi bi-clock-history"></i> Lịch sử mua hàng</h4>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-bag-x" style="font-size:4rem; color:#ccc;"></i>
+            <h5 class="text-muted mt-3">Bạn chưa có đơn hàng nào</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-success mt-2">Mua sắm ngay</a>
+        </div>
+    }
+    else
+    {
+        @foreach (var don in Model)
+        {
+            <div class="card border-0 shadow-sm mb-3" id="don-@don.MaHd">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div>
+                        <strong>Đơn hàng #@don.MaHd</strong>
+                        <small class="text-muted ms-2">@don.NgayLap.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        @{
+                            var (cls, icon, text) = (don.TrangThai ?? 0) switch {
+                                0 => ("warning", "hourglass-split", "Chờ xác nhận"),
+                                1 => ("info", "check-circle", "Đã xác nhận"),
+                                2 => ("primary", "truck", "Đang giao"),
+                                3 => ("success", "check-circle-fill", "Đã giao"),
+                                4 => ("secondary", "x-circle", "Đã hủy"),
+                                _ => ("secondary", "question-circle", "Không xác định")
+                            };
+                        }
+                        <span class="badge bg-@cls">
+                            <i class="bi bi-@icon"></i> @text
+                        </span>
+                        <a asp-action="ChiTiet" asp-route-id="@don.MaHd" class="btn btn-outline-primary btn-sm">Chi tiết</a>
+                        @if (don.TrangThai == 0)
+                        {
+                            <button class="btn btn-outline-danger btn-sm btn-huy" data-id="@don.MaHd">Hủy đơn</button>
+                        }
+                    </div>
+                </div>
+                <div class="card-body p-3">
+                    @foreach (var ct in don.ChiTietHoaDons ?? new List<ChiTietHoaDon>())
+                    {
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <img src="@(string.IsNullOrEmpty(ct.SanPham?.HinhAnh) ? "/images/no-image.svg" : (ct.SanPham!.HinhAnh.StartsWith("http") || ct.SanPham!.HinhAnh.StartsWith("/") ? ct.SanPham!.HinhAnh : "/" + ct.SanPham!.HinhAnh))"
+                                 width="50" height="50" class="rounded bg-light" style="object-fit:cover;"
+                                 onerror="this.onerror=null; this.src='/images/no-image.svg';" />
+                            <div class="flex-grow-1">
+                                <div class="fw-semibold small">@ct.SanPham?.TenSp</div>
+                                <small class="text-muted">SL: @ct.SoLuong × @ct.DonGia.ToString("N0") ₫</small>
+                            </div>
+                            <strong class="text-success">@((ct.SoLuong * ct.DonGia).ToString("N0")) ₫</strong>
+                        </div>
+                    }
+                    <hr class="my-2">
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted small"><i class="bi bi-geo-alt"></i> @(don.DiaChiGiao ?? "Tại quầy")</span>
+                        <strong class="text-success">Tổng: @don.TongTien.ToString("N0") ₫</strong>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+<script>
+    $(document).on('click', '.btn-huy', function() {
+        if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
+        var id = $(this).data('id');
+        $.post('/DonHang/HuyDon/' + id, function(res) {
+            if (res.success) location.reload();
+            else alert(res.message || 'Không thể hủy đơn hàng');
+        });
+    });
+</script>
+}

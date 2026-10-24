@@ -1,0 +1,26 @@
+/* Siêu Thị Nhỏ - Custom Styles */
+
+.product-card {
+    transition: transform .2s, box-shadow .2s;
+}
+.product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.12) !important;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.list-group-item.active {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+/* Responsive table */
+@media (max-width: 768px) {
+    .table-responsive {
+        font-size: .875rem;
+    }
+}

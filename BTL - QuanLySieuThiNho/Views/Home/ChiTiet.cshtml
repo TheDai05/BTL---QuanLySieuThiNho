@@ -1,0 +1,114 @@
+@model BTL___QuanLySieuThiNho.Models.SanPham
+@{
+    ViewData["Title"] = Model.TenSp;
+}
+<div class="container py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index" asp-route-loaiSp="@Model.LoaiSp">@Model.LoaiSp</a></li>
+            <li class="breadcrumb-item active">@Model.TenSp</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <div class="col-md-5">
+            <div class="border rounded bg-light p-2 text-center" style="height:350px;">
+                <img src="@(string.IsNullOrEmpty(Model.HinhAnh) ? "/images/no-image.svg" : (Model.HinhAnh.StartsWith("http") || Model.HinhAnh.StartsWith("/") ? Model.HinhAnh : "/" + Model.HinhAnh))"
+                     class="img-fluid rounded w-100 h-100" alt="@Model.TenSp"
+                     style="object-fit:contain;"
+                     onerror="this.onerror=null; this.src='/images/no-image.svg';" />
+            </div>
+        </div>
+        <div class="col-md-7">
+            <span class="badge bg-success mb-2">@Model.LoaiSp</span>
+            <h2 class="fw-bold">@Model.TenSp</h2>
+            <h3 class="text-success">@Model.GiaBan.ToString("N0") ₫</h3>
+            <p class="text-muted">Mã sản phẩm: <strong>@Model.MaSp</strong></p>
+            <hr>
+            <div class="mb-3">
+                @if ((Model.SoLuongTon ?? 0) > 0)
+                {
+                    <span class="badge bg-success"><i class="bi bi-check-circle"></i> Còn hàng (@Model.SoLuongTon)</span>
+                }
+                else
+                {
+                    <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Hết hàng</span>
+                }
+            </div>
+            @if ((Model.SoLuongTon ?? 0) > 0)
+            {
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <label class="fw-semibold">Số lượng:</label>
+                    <div class="input-group" style="width:130px">
+                        <button class="btn btn-outline-secondary" type="button" id="btnGiam">-</button>
+                        <input type="number" class="form-control text-center" id="soLuong" value="1" min="1" max="@Model.SoLuongTon" />
+                        <button class="btn btn-outline-secondary" type="button" id="btnTang">+</button>
+                    </div>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-success btn-lg flex-grow-1" id="btnThemGio" data-id="@Model.MaSp">
+                        <i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng
+                    </button>
+                    <a asp-controller="GioHang" asp-action="Index" class="btn btn-outline-success btn-lg">
+                        <i class="bi bi-bag"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Sản phẩm liên quan -->
+    @if (ViewBag.SanPhamLienQuan != null)
+    {
+        var lienQuan = (List<BTL___QuanLySieuThiNho.Models.SanPham>)ViewBag.SanPhamLienQuan;
+        if (lienQuan.Any())
+        {
+            <h5 class="mt-5 mb-3"><i class="bi bi-grid"></i> Sản phẩm cùng loại</h5>
+            <div class="row row-cols-2 row-cols-md-4 g-3">
+                @foreach (var sp in lienQuan)
+                {
+                    <div class="col">
+                        <div class="card border-0 shadow-sm h-100">
+                            <a asp-action="ChiTiet" asp-route-id="@sp.MaSp" class="d-block bg-light" style="height:140px;">
+                                <img src="@(string.IsNullOrEmpty(sp.HinhAnh) ? "/images/no-image.svg" : (sp.HinhAnh.StartsWith("http") || sp.HinhAnh.StartsWith("/") ? sp.HinhAnh : "/" + sp.HinhAnh))"
+                                     class="card-img-top w-100 h-100" style="object-fit:cover;"
+                                     onerror="this.onerror=null; this.src='/images/no-image.svg';" />
+                            </a>
+                            <div class="card-body p-2">
+                                <small class="fw-semibold">@sp.TenSp</small>
+                                <p class="text-success mb-0 small">@sp.GiaBan.ToString("N0") ₫</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+<script>
+    var max = @(Model.SoLuongTon ?? 0);
+    $('#btnTang').click(function() { var v = parseInt($('#soLuong').val()); if (v < max) $('#soLuong').val(v+1); });
+    $('#btnGiam').click(function() { var v = parseInt($('#soLuong').val()); if (v > 1) $('#soLuong').val(v-1); });
+    $('#btnThemGio').click(function() {
+        var btn = $(this);
+        var id = btn.data('id');
+        var sl = parseInt($('#soLuong').val());
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Đang thêm...');
+        $.post('/GioHang/ThemVaoGio', { sanPhamId: id, soLuong: sl }, function(res) {
+            if (res.success) {
+                $('#cartCount').text(res.soLuongGio);
+                btn.html('<i class="bi bi-check-circle"></i> Đã thêm vào giỏ!').addClass('btn-outline-success').removeClass('btn-success');
+                setTimeout(function() {
+                    btn.html('<i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng').removeClass('btn-outline-success').addClass('btn-success').prop('disabled', false);
+                }, 2500);
+            } else {
+                alert(res.message);
+                btn.html('<i class="bi bi-cart-plus"></i> Thêm vào giỏ hàng').prop('disabled', false);
+            }
+        });
+    });
+</script>
+}

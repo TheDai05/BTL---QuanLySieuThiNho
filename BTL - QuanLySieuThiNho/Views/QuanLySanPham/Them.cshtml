@@ -1,0 +1,57 @@
+@model BTL___QuanLySieuThiNho.Models.SanPham
+@{ 
+    ViewData["Title"] = "Thêm sản phẩm";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="card border-0 shadow-sm" style="max-width:700px">
+    <div class="card-header"><h6 class="mb-0">Thêm sản phẩm mới</h6></div>
+    <div class="card-body p-4">
+        <form asp-action="Them" method="post" enctype="multipart/form-data">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label asp-for="MaSp" class="form-label fw-semibold"></label>
+                    <input asp-for="MaSp" class="form-control" placeholder="SPxxx" />
+                    <span asp-validation-for="MaSp" class="text-danger small"></span>
+                </div>
+                <div class="col-md-8">
+                    <label asp-for="TenSp" class="form-label fw-semibold"></label>
+                    <input asp-for="TenSp" class="form-control" />
+                    <span asp-validation-for="TenSp" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="GiaBan" class="form-label fw-semibold"></label>
+                    <div class="input-group">
+                        <input asp-for="GiaBan" class="form-control" type="number" min="0" step="1000" />
+                        <span class="input-group-text">₫</span>
+                    </div>
+                    <span asp-validation-for="GiaBan" class="text-danger small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SoLuongTon" class="form-label fw-semibold"></label>
+                    <input asp-for="SoLuongTon" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="SoLuongTon" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label asp-for="LoaiSp" class="form-label fw-semibold"></label>
+                    <input asp-for="LoaiSp" class="form-control" list="loaiSpList" placeholder="Nhập hoặc chọn loại sản phẩm" />
+                    <datalist id="loaiSpList">
+                        @foreach (var c in (List<string>)ViewBag.Categories)
+                        {
+                            <option value="@c"></option>
+                        }
+                    </datalist>
+                    <span asp-validation-for="LoaiSp" class="text-danger small"></span>
+                </div>
+                <div class="col-12">
+                    <label class="form-label fw-semibold">Hình ảnh</label>
+                    <input type="file" name="hinhAnhFile" class="form-control" accept="image/*" />
+                </div>
+            </div>
+            <div class="d-flex gap-2 mt-4">
+                <button type="submit" class="btn btn-success"><i class="bi bi-save"></i> Lưu sản phẩm</button>
+                <a href="/Admin/QuanLySanPham" class="btn btn-outline-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+@section Scripts { @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); } }

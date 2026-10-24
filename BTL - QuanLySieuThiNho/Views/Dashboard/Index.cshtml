@@ -1,0 +1,104 @@
+@using BTL___QuanLySieuThiNho.Models
+@{ ViewData["Title"] = "Dashboard"; Layout = "~/Views/Shared/_AdminLayout.cshtml"; }
+
+<div class="row g-3 g-xl-4 mb-4 align-items-stretch">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100 border-start border-success border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3 p-xl-4">
+                <div class="me-2">
+                    <div class="text-muted small fw-semibold text-uppercase">Sản phẩm</div>
+                    <h3 class="my-1 fw-bold text-dark">@ViewBag.TongSanPham</h3>
+                    <div class="small text-success"><i class="bi bi-box-seam me-1"></i>Đang kinh doanh</div>
+                </div>
+                <div class="rounded-circle bg-success bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:52px; height:52px;">
+                    <i class="bi bi-box-seam text-success fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100 border-start border-info border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3 p-xl-4">
+                <div class="me-2">
+                    <div class="text-muted small fw-semibold text-uppercase">Khách hàng</div>
+                    <h3 class="my-1 fw-bold text-dark">@ViewBag.TongKhachHang</h3>
+                    <div class="small text-info"><i class="bi bi-person-check me-1"></i>Đã đăng ký</div>
+                </div>
+                <div class="rounded-circle bg-info bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:52px; height:52px;">
+                    <i class="bi bi-people text-info fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100 border-start border-warning border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3 p-xl-4">
+                <div class="me-2">
+                    <div class="text-muted small fw-semibold text-uppercase">Tổng hóa đơn</div>
+                    <h3 class="my-1 fw-bold text-dark">@ViewBag.TongDonHang</h3>
+                    <div class="small text-warning"><i class="bi bi-hourglass-split me-1"></i>@ViewBag.DonHangChoXacNhan chờ xác nhận</div>
+                </div>
+                <div class="rounded-circle bg-warning bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:52px; height:52px;">
+                    <i class="bi bi-bag-check text-warning fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card stat-card h-100 border-start border-danger border-4">
+            <div class="card-body d-flex justify-content-between align-items-center p-3 p-xl-4">
+                <div class="me-2">
+                    <div class="text-muted small fw-semibold text-uppercase">Doanh thu</div>
+                    <h3 class="my-1 fw-bold text-dark" style="font-size:1.35rem;">@(((decimal)ViewBag.DoanhThu).ToString("N0")) ₫</h3>
+                    <div class="small text-muted"><i class="bi bi-graph-up me-1"></i>Tổng thực thu</div>
+                </div>
+                <div class="rounded-circle bg-danger bg-opacity-10 d-flex align-items-center justify-content-center flex-shrink-0" style="width:52px; height:52px;">
+                    <i class="bi bi-currency-dollar text-danger fs-3"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0"><i class="bi bi-clock-history"></i> Đơn hàng gần đây</h6>
+        <a href="/Admin/QuanLyDonHang" class="btn btn-outline-success btn-sm">Xem tất cả</a>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr><th>#</th><th>Khách hàng</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Trạng thái</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in (List<HoaDon>)ViewBag.DonHangGanDay)
+                    {
+                        <tr>
+                            <td><strong>#@d.MaHd</strong></td>
+                            <td>@d.KhachHang?.TenKh</td>
+                            <td>@d.NgayLap.ToString("dd/MM HH:mm")</td>
+                            <td class="text-success fw-semibold">@d.TongTien.ToString("N0") ₫</td>
+                            <td>
+                                @{
+                                    var (cls, ten) = d.TrangThai switch {
+                                        0 => ("warning", "Chờ xác nhận"),
+                                        1 => ("info", "Đã xác nhận"),
+                                        2 => ("primary", "Đang giao"),
+                                        3 => ("success", "Đã giao"),
+                                        4 => ("secondary", "Đã hủy"),
+                                        _ => ("secondary", "?")
+                                    };
+                                }
+                                <span class="badge bg-@cls">@ten</span>
+                            </td>
+                            <td>
+                                <a href="/Admin/QuanLyDonHang/ChiTiet/@d.MaHd" class="btn btn-outline-primary btn-sm">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

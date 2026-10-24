@@ -1,0 +1,157 @@
+@model BTL___QuanLySieuThiNho.ViewModels.GioHangVM
+@{ ViewData["Title"] = "Giỏ hàng"; }
+
+<div class="container py-4">
+    <h4 class="mb-4"><i class="bi bi-cart3"></i> Giỏ hàng của bạn</h4>
+
+    @if (!Model.Items.Any())
+    {
+        <div class="text-center py-5">
+            <i class="bi bi-cart-x" style="font-size:4rem; color:#ccc;"></i>
+            <h5 class="text-muted mt-3">Giỏ hàng trống</h5>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-success mt-2">
+                <i class="bi bi-arrow-left"></i> Tiếp tục mua hàng
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th style="width:50%">Sản phẩm</th>
+                                        <th>Đơn giá</th>
+                                        <th style="width:130px">Số lượng</th>
+                                        <th>Thành tiền</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr id="row-@item.GioHangId">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-3">
+                                                    <img src="@(string.IsNullOrEmpty(item.HinhAnh) ? "/images/no-image.svg" : (item.HinhAnh.StartsWith("http") || item.HinhAnh.StartsWith("/") ? item.HinhAnh : "/" + item.HinhAnh))"
+                                                         width="60" height="60" class="rounded bg-light" style="object-fit:cover;"
+                                                         onerror="this.onerror=null; this.src='/images/no-image.svg';" />
+                                                    <div>
+                                                        <span class="fw-semibold">@item.TenSanPham</span>
+                                                        <small class="text-muted d-block">Mã: @item.MaSp</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-success">@item.DonGia.ToString("N0") ₫</td>
+                                            <td>
+                                                <div class="input-group input-group-sm">
+                                                    <button class="btn btn-outline-secondary btn-giam" data-id="@item.GioHangId">-</button>
+                                                    <input type="number" class="form-control text-center sl-input" min="1"
+                                                           value="@item.SoLuong" data-id="@item.GioHangId" style="width:50px" />
+                                                    <button class="btn btn-outline-secondary btn-tang" data-id="@item.GioHangId">+</button>
+                                                </div>
+                                            </td>
+                                            <td class="fw-bold text-success thanh-tien" id="tt-@item.GioHangId">
+                                                @item.ThanhTien.ToString("N0") ₫
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-danger btn-xoa" data-id="@item.GioHangId" title="Xóa">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary mt-3">
+                    <i class="bi bi-arrow-left"></i> Tiếp tục mua hàng
+                </a>
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">Tóm tắt đơn hàng</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tạm tính:</span>
+                            <strong id="tongTien">@Model.TongTien.ToString("N0") ₫</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-muted">
+                            <span>Phí vận chuyển:</span>
+                            <span>Miễn phí</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-5 fw-bold text-success">
+                            <span>Tổng cộng:</span>
+                            <span id="tongTienFinal">@Model.TongTien.ToString("N0") ₫</span>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <a asp-controller="DonHang" asp-action="DatHang" class="btn btn-success w-100 btn-lg">
+                            <i class="bi bi-credit-card"></i> Tiến hành đặt hàng
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    function capNhatSoLuong(gioHangId, soLuong) {
+        $.post('/GioHang/CapNhatSoLuong', { gioHangId: gioHangId, soLuong: soLuong }, function(res) {
+            if (res.success) {
+                if (soLuong <= 0) {
+                    $('#row-' + gioHangId).fadeOut(300, function() { $(this).remove(); });
+                } else {
+                    var tt = res.thanhTien.toLocaleString('vi-VN') + ' ₫';
+                    var tong = res.tongTien.toLocaleString('vi-VN') + ' ₫';
+                    $('#tt-' + gioHangId).text(tt);
+                    $('#tongTien, #tongTienFinal').text(tong);
+                    $('#cartCount').text(res.tongSoLuong);
+                }
+            }
+        });
+    }
+
+    $(document).on('click', '.btn-tang', function() {
+        var id = $(this).data('id');
+        var inp = $('.sl-input[data-id="' + id + '"]');
+        var v = parseInt(inp.val()) + 1;
+        inp.val(v);
+        capNhatSoLuong(id, v);
+    });
+
+    $(document).on('click', '.btn-giam', function() {
+        var id = $(this).data('id');
+        var inp = $('.sl-input[data-id="' + id + '"]');
+        var v = parseInt(inp.val()) - 1;
+        if (v < 1) v = 1;
+        inp.val(v);
+        capNhatSoLuong(id, v);
+    });
+
+    $(document).on('change', '.sl-input', function() {
+        var id = $(this).data('id');
+        capNhatSoLuong(id, parseInt($(this).val()));
+    });
+
+    $(document).on('click', '.btn-xoa', function() {
+        if (!confirm('Xóa sản phẩm này khỏi giỏ hàng?')) return;
+        var id = $(this).data('id');
+        $.post('/GioHang/XoaKhoiGio', { gioHangId: id }, function(res) {
+            if (res.success) location.reload();
+        });
+    });
+</script>
+}
